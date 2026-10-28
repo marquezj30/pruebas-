@@ -640,7 +640,7 @@ En este commit se dejó lista la base del proyecto: Node.js con Express, la cone
 
 **1. Proyecto creado en Neon.** Se creó el proyecto `catpark` con la base `neondb` en la rama `production`. El esquema `public` todavía muestra 0 tablas, porque las tablas se crean en el commit 2 con `npm run db:reset`. En el commit 2 también se creó la base propia `catpark_database`, que es la que usa el proyecto desde entonces.
 
-![Proyecto catpark creado en Neon](docs/Images/evidencias1/c01-01-crear-base-neon.png)
+![Proyecto catpark creado en Neon](docs/Images/evidencia1/c01-01-crear-base-neon.png)
 
 **2. Variables de entorno.** La conexión se configura en un archivo `.env` que **no se sube a GitHub** (está en el `.gitignore`), porque contiene la contraseña de la base. En el repositorio solo va la plantilla `.env.example`:
 
@@ -653,19 +653,19 @@ Cada integrante copia `.env.example` como `.env` y pega la *connection string* q
 
 **3. Conexión a la base (`src/config/db.js`).** Crea un *pool*, es decir, un grupo de conexiones a PostgreSQL que se reutilizan en cada consulta. Si falta `DATABASE_URL`, el programa avisa y se detiene. La línea `types.setTypeParser(1114, ...)` hace que las fechas se devuelvan tal como están en la base, sin que Node les cambie la hora.
 
-![Archivo db.js](docs/Images/evidencias1/c01-02-db-js.png)
+![Archivo db.js](docs/Images/evidencia1/c01-02-db-js.png)
 
 **4. Aplicación de Express (`src/app.js`).** Configura Express para leer JSON y define el endpoint `GET /api/health`, que ejecuta `SELECT now()` en Neon. Si la consulta funciona, responde `status: ok`; si falla, responde 500 con el error.
 
-![Archivo app.js](docs/Images/evidencias1/c01-03-app-js.png)
+![Archivo app.js](docs/Images/evidencia1/c01-03-app-js.png)
 
 **5. Arranque del servidor (`src/server.js`).** Antes de abrir el puerto 3000, prueba la conexión con `SELECT 1`. Si la base responde, muestra "Conectado a la base de datos" y empieza a escuchar; si no, muestra el error y se detiene, para no tener una API corriendo sin base de datos.
 
-![Archivo server.js](docs/Images/evidencias1/c01-04-server-js.png)
+![Archivo server.js](docs/Images/evidencia1/c01-04-server-js.png)
 
 **6. Prueba en Postman.** La petición `GET http://localhost:3000/api/health` respondió **200 OK** con `"status": "ok"`, `"db": "connected"` y la hora del servidor de Neon, lo que confirma que la API se conecta correctamente a la base remota.
 
-![Prueba de GET /api/health en Postman](docs/Images/evidencias1/c01-05-postman.png)
+![Prueba de GET /api/health en Postman](docs/Images/evidencia1/c01-05-postman.png)
 
 ### Commit 2: scripts de base de datos y manejo de errores
 
@@ -673,35 +673,35 @@ En este commit se crearon las 16 tablas en Neon con un solo comando, se cargaron
 
 **1. Base propia en Neon.** En el mismo proyecto de Neon se creó la base `catpark_database`, para no usar la base por defecto `neondb`. La cadena de conexión del `.env` ahora termina en `/catpark_database`.
 
-![Base catpark_database en Neon](docs/Images/evidencias2/c02-01-catpark-database.png)
+![Base catpark_database en Neon](docs/Images/evidencia2/c02-01-catpark-database.png)
 
 **2. Script SQL corregido (`database/estacionamiento.sql`).** En el script original la tabla `roles` aparecía antes que `users` y fallaba, porque `roles` apuntaba a una tabla que todavía no existía. Ahora `users` va primero. Además, al inicio se fija la zona horaria de la base en `America/Lima`, porque Neon trabaja en UTC y las horas de entrada y salida saldrían 5 horas adelantadas.
 
-![Inicio del script SQL con la zona horaria y la tabla users](docs/Images/evidencias2/c02-02-sql-inicio.png)
+![Inicio del script SQL con la zona horaria y la tabla users](docs/Images/evidencia2/c02-02-sql-inicio.png)
 
 **3. Usuarios con rol.** La tabla `users` ahora tiene la columna `role_id`, para que cada usuario tenga un rol (Administrador, Cajero o Vigilante). Como `users` y `roles` se apuntan entre sí, la llave foránea `users_role_id_fkey` se agrega al final con `ALTER TABLE` y es `DEFERRABLE`, es decir, se revisa al terminar la transacción.
 
-![Tabla users con role_id y la llave foránea hacia roles](docs/Images/evidencias2/c02-03-sql-roles.png)
+![Tabla users con role_id y la llave foránea hacia roles](docs/Images/evidencia2/c02-03-sql-roles.png)
 
 **4. Datos de prueba (`scripts/db-seed.js`).** Inserta el usuario `admin` (contraseña `admin123`, guardada cifrada con bcrypt) con el rol Administrador. Como `users` se referencia a sí misma, el primer usuario se inserta con `id = 1` y `created_id = 1` usando `OVERRIDING SYSTEM VALUE`. Luego inserta los catálogos: 3 roles, 3 tipos de vehículo, 3 tarifas en soles, 3 marcas, 6 modelos, 2 zonas, 10 cupos, 3 métodos de pago y 2 tipos de comprobante, todo dentro de una transacción.
 
-![Script db-seed.js insertando el usuario admin](docs/Images/evidencias2/c02-04-seed.png)
+![Script db-seed.js insertando el usuario admin](docs/Images/evidencia2/c02-04-seed.png)
 
 **5. Creación de las tablas y carga de datos.** `npm run db:reset` borra y vuelve a crear las 16 tablas, y `npm run db:seed` carga los datos de prueba.
 
-![Ejecución de npm run db:reset y npm run db:seed](docs/Images/evidencias2/c02-05-terminal-reset-seed.png)
+![Ejecución de npm run db:reset y npm run db:seed](docs/Images/evidencia2/c02-05-terminal-reset-seed.png)
 
 **6. Base comprobada en Neon.** Las 16 tablas quedaron creadas en `catpark_database`. La tabla `roles` tiene Administrador, Cajero y Vigilante, y la tabla `users` tiene al `admin` con `role_id = 1`.
 
-![Las 16 tablas en Neon](docs/Images/evidencias2/c02-06-neon-tablas.png)
+![Las 16 tablas en Neon](docs/Images/evidencia2/c02-06-neon-tablas.png)
 
-![Tabla roles en Neon](docs/Images/evidencias2/c02-07-neon-roles.png)
+![Tabla roles en Neon](docs/Images/evidencia2/c02-07-neon-roles.png)
 
-![Tabla users con el admin y su rol](docs/Images/evidencias2/c02-08-neon-users.png)
+![Tabla users con el admin y su rol](docs/Images/evidencia2/c02-08-neon-users.png)
 
 **7. Manejo global de errores.** `src/utils/AppError.js` es un error propio que lleva el código HTTP, `src/utils/asyncHandler.js` pasa los errores de los controladores al manejador sin repetir `try/catch`, y `src/middlewares/errorHandler.js` responde siempre en JSON: 404 para rutas que no existen, 400 para JSON mal escrito y, para los errores de PostgreSQL, 409 si el dato está duplicado (`23505`) y 400 si la llave foránea no existe (`23503`), falta un campo (`23502`) o el formato es inválido (`22P02`).
 
-![Archivo errorHandler.js](docs/Images/evidencias2/c02-09-error-handler.png)
+![Archivo errorHandler.js](docs/Images/evidencia2/c02-09-error-handler.png)
 
 
 ### Commit 3: autenticación con JWT y CRUD de usuarios
@@ -918,8 +918,8 @@ En este commit se crearon los módulos de **zonas** y **cupos** del estacionamie
 
 **3. CRUD `crud de parking`.** Se puede comparar las inserciones que se hizo con el get de manera que se pueda verificar si este guardo su informacion enviado correctamente.
 
-![Get de parking](docs/Images/evidencia10/c10-03-get-de-parking.png)
-![Post de parking](docs/Images/evidencia10/c10-04-post-de-parking.png)
+![Get de parking](docs/Images/evidencia10/c10-03_get_de_parking.png)
+![Post de parking](docs/Images/evidencia10/c10-04_post_de_parking.png)
 
 **Endpoints de zonas y cupos:**
 
